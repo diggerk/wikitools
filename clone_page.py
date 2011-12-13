@@ -40,7 +40,6 @@ class ClonePages(object):
         if trg_page is None:
             trg_page = self._create_page(src_page, self.trg_home_page)
 
-        logger.info("Cloning page '%s' from %s to %s", src_page_name, src_page.id, trg_page.id)
         self._clone_page(src_page, trg_page)
         for child in self.src_client.service.getChildren(self.src_client.auth, src_page.id):
             trg_child = self._get_page(self.trg_pages, child.title, True)
@@ -51,7 +50,6 @@ class ClonePages(object):
                 logger.warning("Skip child page '%s' as it's beloning to a different parent in trg Wiki",
                     child.title)
             else:
-                logger.info("Cloning child page '%s'", child.title)
                 self.clone_page(child.title)
 
     def _get_page_details(self, wiki_client, page_info):
@@ -86,6 +84,7 @@ class ClonePages(object):
         if trg_page.modified >= src_page.modified:
             logger.info("Page '%s' is already up to date", trg_page.title)
         else:
+            logger.info("Cloning page '%s'", src_page.title)
             update_options = self.trg_client.client.factory.create('ns0:RemotePageUpdateOptions')
             update_options.versionComment = 'Clone page content from the src Wiki'
             update_options.minorEdit = False
