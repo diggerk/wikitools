@@ -21,6 +21,10 @@ class ClonePages(object):
             self.src_client.auth, self.src_client.space_name)
         self.trg_pages = self.trg_client.service.getPages(
             self.trg_client.auth, self.trg_client.space_name)
+
+        space = self.trg_client.service.getSpace(self.trg_client.auth, self.trg_client.space_name)
+        self.trg_home_page = filter(lambda p: p.id == space.homePage, self.trg_pages)[0]
+
         self.created_pages = {}
 
     def clone_page(self, src_page_name, trg_page_name=None):
@@ -34,8 +38,7 @@ class ClonePages(object):
 
         trg_page = self._get_page(self.trg_pages, trg_page_name, True)
         if trg_page is None:
-            logger.error("Can't find page %s in space %s", trg_page_name, self.trg_client.space_name)
-            raise Exception("Can't find page %s in space %s", trg_page_name, self.trg_client.space_name)
+            trg_page = self._create_page(src_page, self.trg_home_page)
 
         logger.info("Cloning page '%s' from %s to %s", src_page_name, src_page.id, trg_page.id)
         self._clone_page(src_page, trg_page)
