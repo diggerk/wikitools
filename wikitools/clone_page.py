@@ -38,19 +38,22 @@ class ClonePages(object):
 
         trg_page = self._get_page(self.trg_pages, trg_page_name, True)
         if trg_page is None:
-            trg_page = self._create_page(src_page, self.trg_home_page)
+            trg_page = self._create_page(src_page, self.trg_home_page, trg_page_name)
 
         self._clone_page(src_page, trg_page)
         for child in self.src_client.service.getChildren(self.src_client.auth, src_page.id):
             trg_child = self._get_page(self.trg_pages, child.title, True)
-            if not trg_child:
-                logger.info("Creating child page '%s'", child.title)
-                trg_child = self._create_page(child, trg_page)
-            if trg_child.parentId != trg_page.id:
-                logger.warning("Skip child page '%s' as it's beloning to a different parent in trg Wiki",
-                    child.title)
-            else:
-                self.clone_page(child.title)
+            try:
+                if not trg_child:
+                    logger.info("Creating child page '%s'", child.title)
+                    trg_child = self._create_page(child, trg_page)
+                elif trg_child.parentId != trg_page.id:
+                    logger.warning("Skip child page '%s' as it's beloning to a different parent in trg Wiki",
+                        child.title)
+                else:
+                    self.clone_page(child.title)
+            except:
+                logger.error("Couldn't clone child page '%s'", child.title, exc_info=True)
 
     def _get_page_details(self, wiki_client, page_info):
         if wiki_client.pages_by_names:
@@ -58,10 +61,10 @@ class ClonePages(object):
         else:
             return wiki_client.service.getPage(wiki_client.auth, page_info.id)
 
-    def _create_page(self, src_page_info, trg_parent):
+    def _create_page(self, src_page_info, trg_parent, trg_page_name=None):
         src_page = self._get_page_details(self.src_client, src_page_info)
         page = self.trg_client.client.factory.create('ns0:RemotePage')
-        page.title = src_page.title
+        page.title = trg_page_name if trg_page_name else src_page.title
         page.content = src_page.content
         page.parentId = trg_parent.id
         page.space = trg_parent.space
@@ -97,6 +100,8 @@ class ClonePages(object):
     def _clone_attachments(self, src_page, trg_page):
         trg_atts = self.trg_client.service.getAttachments(self.trg_client.auth, trg_page.id)
         for att in self.src_client.service.getAttachments(self.src_client.auth, src_page.id):
+            if att.fileSize > 1024 * 1024 * 10: # skip >10Mb attachments
+                continue
             trg_att = None
             for a in trg_atts:
                 if a.fileName == att.fileName:
@@ -130,13 +135,17 @@ class ClonePages(object):
         return None
 
 
-if len(sys.argv) < 4:
-    print "Usage: python clone_page.py from-profile from-page to-profile [to-page]"
-    exit(1)
+def main():
+    if len(sys.argv) < 4:
+        print "Usage: python clone_page.py from-profile from-page to-profile [to-page]"
+        exit(1)
 
-logging.root.addHandler(logging.StreamHandler())
-logging.root.setLevel(logging.DEBUG)
-logging.getLogger('suds').setLevel(logging.INFO)
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(logging.DEBUG)
+    logging.getLogger('suds').setLevel(logging.INFO)
 
-cloner = ClonePages(sys.argv[1], sys.argv[3])
-cloner.clone_page(sys.argv[2], sys.argv[4] if len(sys.argv) > 4 else None)
+    cloner = ClonePages(sys.argv[1], sys.argv[3])
+    cloner.clone_page(sys.argv[2], sys.argv[4] if len(sys.argv) > 4 else None)
+
+if __name__ == '__main__':
+    main()

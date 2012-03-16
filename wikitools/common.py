@@ -7,7 +7,11 @@ from suds.client import Client
 class WikiClient(object):
     def __init__(self, profile_name=None):
         config = ConfigParser.SafeConfigParser()
-        config.read(os.path.expanduser('~/.wikitools'))
+        if (os.path.exists('/etc/wikitools')):
+            cfg_file = '/etc/wikitools'
+        else:
+            cfg_file = '~/.wikitools'
+        config.read(os.path.expanduser(cfg_file))
 
         if profile_name:
             section_name = profile_name

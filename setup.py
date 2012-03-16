@@ -14,5 +14,11 @@ setup(
     namespace_packages=['wikitools'],
     install_requires=[
         'suds'
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'clone_wiki=wikitools.clone_page:main',
+            'clone_wiki_news=wikitools.clone_news:main',
+        ]
+    }
 )
