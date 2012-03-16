@@ -19,10 +19,6 @@ class CloneNews(object):
         logger.info("Cloning %s blog entries", len(src_entries))
         for e in src_entries:
             trg = self._find_entry(trg_entries, e.publishDate, e.title)
-            if trg and (e.publishDate - trg.publishDate).seconds < 1:
-                continue
-            if trg:
-                logger.info("s %s t %s", e.publishDate, trg.publishDate)
             verb = 'Cloning' if not trg else 'Updating'
             logger.info("%s entry %s posted on %s", verb, e.title, e.publishDate)
             self.clone_entry(e.id, trg.id if trg else None)
