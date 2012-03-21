@@ -26,7 +26,8 @@ class CloneNews(object):
     def clone_entry(self, entry_id, trg_entry_id):
         src_entry = self.src_client.service.getBlogEntry(self.src_client.auth, entry_id)
         trg_entry = self._create_entry(src_entry, trg_entry_id)
-        self.trg_client.service.storeBlogEntry(self.trg_client.auth, trg_entry)
+        if trg_entry:
+            self.trg_client.service.storeBlogEntry(self.trg_client.auth, trg_entry)
 
     def _find_entry(self, entries, date, title):
         for e in entries:
