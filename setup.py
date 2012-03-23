@@ -20,6 +20,7 @@ setup(
             'clone_wiki=wikitools.clone_page:main',
             'clone_wiki_news=wikitools.clone_news:main',
             'clone_wiki_news_hid=wikitools.clone_news_hid:main',
+            'delete_wiki_page=wikitools.delete_page:main',
         ]
     }
 )
