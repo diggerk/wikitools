@@ -47,6 +47,7 @@ class ClonePages(object):
                 if not trg_child:
                     logger.info("Creating child page '%s'", child.title)
                     trg_child = self._create_page(child, trg_page)
+                    self.clone_page(child.title, trg_child.title)
                 elif trg_child.parentId != trg_page.id:
                     logger.warning("Skip child page '%s' as it's beloning to a different parent in trg Wiki",
                         child.title)
